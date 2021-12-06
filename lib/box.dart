@@ -24,18 +24,16 @@ class Box extends StatelessWidget {
         child: Selector<GameViewModel, List<Node>>(
           selector: (context, viewModel) => viewModel.chain,
           builder: (BuildContext context, chain, Widget? child) {
-            return !node.alive
-                ? const SizedBox()
-                : Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      border: chain.contains(node)
-                          ? Border.all(color: Colors.yellow, width: 4)
-                          : null,
-                      color: Colors.orange[200],
-                    ),
-                    child: child!,
-                  );
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                border: chain.contains(node)
+                    ? Border.all(color: Colors.yellow, width: 4)
+                    : null,
+                color: Colors.orange[200],
+              ),
+              child: child!,
+            );
           },
           child: Center(
             child: Text(

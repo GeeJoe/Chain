@@ -1,58 +1,50 @@
 import 'dart:ui';
 
+import 'package:uuid/uuid.dart';
+
 class Node {
+  final String id;
   final Offset position;
-  final int indexX;
-  final int indexY;
+  final Offset coordinate;
   final int value;
   final Size size;
-  final bool alive;
 
   Node({
-    this.alive = true,
     required this.position,
+    required this.coordinate,
     required this.value,
-    required this.indexX,
-    required this.indexY,
     required this.size,
-  });
+  }) : id = const Uuid().v1();
 
-  Node newPosition(Offset position) {
-    return Node(
-      position: position,
-      value: value,
-      indexX: indexX,
-      indexY: indexY,
-      size: size,
-    );
+  bool isPointerIn(Offset? pointer) {
+    if (pointer == null) return false;
+    if (pointer.dx >= position.dx &&
+        pointer.dx <= position.dx + size.width &&
+        pointer.dy >= position.dy &&
+        pointer.dy <= position.dy + size.height) {
+      return true;
+    }
+    return false;
   }
 
-  Node kill() {
-    return Node(
-      alive: false,
-      position: position,
-      value: value,
-      indexX: indexX,
-      indexY: indexY,
-      size: size,
-    );
+  bool isNeighbor(Node node) {
+    var absX = (coordinate.dx - node.coordinate.dx).abs();
+    var absY = (coordinate.dy - node.coordinate.dy).abs();
+    return absX < 2 && absY < 2;
   }
 
-  Node fall(int step, List<Node> allNode) {
-    int newIndexY = indexY + step;
-    Node targetNode = allNode.firstWhere(
-        (element) => element.indexX == indexX && element.indexY == newIndexY);
-    return Node(
-      position: targetNode.position,
-      value: value,
-      indexX: indexX,
-      indexY: newIndexY,
-      size: size,
-    );
+  bool hasSameValue(Node node) {
+    return value == node.value;
   }
 
-  String key() {
-    return "$indexX-$indexY-$value";
+  /// 如果结点值一样, 且是邻居，可以入链
+  bool canChain(Node node) {
+    return isNeighbor(node) && hasSameValue(node);
+  }
+
+  @override
+  String toString() {
+    return 'Node{id: $id, position: $position, coordinate: $coordinate, value: $value, size: $size}';
   }
 
   @override
@@ -60,24 +52,17 @@ class Node {
       identical(this, other) ||
       other is Node &&
           runtimeType == other.runtimeType &&
+          id == other.id &&
           position == other.position &&
-          indexX == other.indexX &&
-          indexY == other.indexY &&
+          coordinate == other.coordinate &&
           value == other.value &&
-          size == other.size &&
-          alive == other.alive;
+          size == other.size;
 
   @override
   int get hashCode =>
+      id.hashCode ^
       position.hashCode ^
-      indexX.hashCode ^
-      indexY.hashCode ^
+      coordinate.hashCode ^
       value.hashCode ^
-      size.hashCode ^
-      alive.hashCode;
-
-  @override
-  String toString() {
-    return 'Node{indexX: $indexX, indexY: $indexY, value: $value, alive: $alive}';
-  }
+      size.hashCode;
 }

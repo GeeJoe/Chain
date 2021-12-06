@@ -3,13 +3,29 @@ import 'dart:math';
 import 'package:chain/node.dart';
 import 'package:flutter/cupertino.dart';
 
+class GameInfo {
+  int column;
+  int row;
+
+  GameInfo({
+    required this.column,
+    required this.row,
+  });
+}
+
 class GameViewModel extends ChangeNotifier {
   Offset? pointer;
 
   List<Node> chain = [];
-  List<Node> allNode = [];
+  Map<Offset, Node> allNode = {};
+  GameInfo gameInfo = GameInfo(column: 0, row: 0);
 
-  newGame(double parentMaxWidth, double parentMaxHeight, int column, int row) {
+  /// 开始新游戏
+  newGame(double parentMaxWidth, double parentMaxHeight, GameInfo gameInfo) {
+    this.gameInfo = gameInfo;
+    int column = gameInfo.column;
+    int row = gameInfo.row;
+    debugPrint("newGame, column=$column, row=$row");
     double space = 5;
     double maxContainerWidth = parentMaxWidth * 0.8;
     double maxContainerHeight = parentMaxHeight * 0.8;
@@ -22,29 +38,31 @@ class GameViewModel extends ChangeNotifier {
     double startY = ((parentMaxHeight - maxContainerHeight) / 2) +
         ((maxContainerHeight - (row * boxSize) - verticalSpace) / 2);
 
-    List<Node> nodes = [];
+    Map<Offset, Node> nodes = {};
     for (int y = 0; y < row; y++) {
       for (int x = 0; x < column; x++) {
         double boxX = startX + (x * boxSize) + (x * space);
         double boxY = startY + (y * boxSize) + (y * space);
         int value = Random().nextInt(3);
-        nodes.add(Node(
+        Offset coordinate = Offset(x.toDouble(), y.toDouble());
+        nodes[coordinate] = Node(
           position: Offset(boxX, boxY),
-          indexX: x,
-          indexY: y,
+          coordinate: coordinate,
           value: value,
           size: Size.square(boxSize),
-        ));
+        );
       }
     }
 
-    allNode = nodes.reversed.toList();
+    allNode = nodes;
     notifyListeners();
   }
 
+  /// 当手机滑动的时候触发更新
   updatePointer(Offset? pointer) {
     this.pointer = pointer;
-    for (var node in allNode) {
+    for (var node in allNode.values) {
+      // 如果手指触摸到格子里，尝试将格子链起来
       if (node.isPointerIn(pointer)) {
         _tryPutInChain(node);
       }
@@ -59,12 +77,14 @@ class GameViewModel extends ChangeNotifier {
     }
   }
 
+  /// 将 index 之后的结点从链中移除
   _removeChainAfterIndex(int index) {
     chain = chain.sublist(0, index + 1);
     debugPrint("removeChainAfterIndex, index=$index, chain=$chain");
     notifyListeners();
   }
 
+  /// 尝试将结点链接起来
   _tryPutInChain(Node node) {
     if (chain.contains(node)) {
       return;
@@ -84,6 +104,7 @@ class GameViewModel extends ChangeNotifier {
     }
   }
 
+  /// 手指离开屏幕的时候更新
   endPointer() {
     // 没有链什么都不用处理
     if (chain.isEmpty) {
@@ -97,28 +118,26 @@ class GameViewModel extends ChangeNotifier {
     }
     // 走到这里说明可以得分
 
-    // kill all chained box
-    for (Node node in chain) {
-      allNode.replace(node, node.kill());
+    // 移除所有链中的结点
+    for (var chainedNode in chain) {
+      allNode.remove(chainedNode.coordinate);
     }
-    for (Node node in allNode) {
-      var fallStep =
-          chain.countWhere((element) => element.indexX == node.indexX);
-      allNode.replace(node, node.fall(fallStep, allNode));
+
+    // 所有空位上面的结点下降
+    for (var node in allNode.values) {
+      var nodesBelow = allNode.values.findAllNodeBelow(node);
+      var chainedNodeCount = chain.countWhere((n) => nodesBelow.contains(n));
+
     }
-    // fall all upper box
+
     chain = [];
     notifyListeners();
   }
 }
 
-extension NodesUtil on List<Node> {
-  replace(Node oldNode, Node newNode) {
-    int oldIndex = indexWhere((element) =>
-        element.indexX == oldNode.indexX && element.indexY == oldNode.indexY);
-    this[oldIndex] = newNode;
-  }
+extension NodesUtil on Iterable<Node> {
 
+  /// 计算有多少个符合 [where] 的 item
   int countWhere(bool Function(Node node) where) {
     int count = 0;
     forEach((element) {
@@ -128,32 +147,16 @@ extension NodesUtil on List<Node> {
     });
     return count;
   }
-}
 
-extension Util on Node {
-  bool isPointerIn(Offset? pointer) {
-    if (pointer == null) return false;
-    if (pointer.dx >= position.dx &&
-        pointer.dx <= position.dx + size.width &&
-        pointer.dy >= position.dy &&
-        pointer.dy <= position.dy + size.height) {
-      return true;
-    }
-    return false;
-  }
-
-  bool isNeighbor(Node node) {
-    var absX = (indexX - node.indexX).abs();
-    var absY = (indexY - node.indexY).abs();
-    return absX < 2 && absY < 2;
-  }
-
-  bool hasSameValue(Node node) {
-    return value == node.value;
-  }
-
-  /// 如果结点值一样, 且是邻居，可以入链
-  bool canChain(Node node) {
-    return isNeighbor(node) && hasSameValue(node);
+  /// 返回所有 node 下面的结点
+  List<Node> findAllNodeBelow(Node node) {
+    List<Node> result = [];
+    forEach((element) {
+      if (element.coordinate.dx == node.coordinate.dx &&
+          element.coordinate.dy > node.coordinate.dy) {
+        result.add(element);
+      }
+    });
+    return result;
   }
 }

@@ -29,8 +29,7 @@ class _MyGameState extends State<MyGame> {
               Provider.of<GameViewModel>(context, listen: false).newGame(
                 MediaQuery.of(context).size.width,
                 MediaQuery.of(context).size.height,
-                4,
-                4,
+                GameInfo(column: 4, row: 4),
               );
             },
             child: const Text(
@@ -56,16 +55,17 @@ class _MyGameState extends State<MyGame> {
           builder: (BuildContext context, BoxConstraints constraints) {
             return Center(
               child: Selector<GameViewModel, List<Node>>(
-                selector: (context, viewModel) => viewModel.allNode,
+                selector: (context, viewModel) =>
+                    viewModel.allNode.values.toList(),
                 shouldRebuild: (_, __) => true,
                 builder: (BuildContext context, allNode, Widget? child) {
+                  debugPrint("new pad");
                   var pad = allNode
                       .map((e) => Box(
                             e,
-                            key: ValueKey(e.key()),
+                            key: ValueKey(e.id),
                           ))
                       .toList();
-                  debugPrint("new pad=$pad");
                   return Stack(
                     children: [
                       Container(
