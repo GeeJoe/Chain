@@ -103,6 +103,6 @@ class Node {
 
   @override
   String toString() {
-    return 'Node{id: $id, position: $position, coordinate: $coordinate, value: $value, size: $size}';
+    return 'Node{$coordinate,$value}';
   }
 }

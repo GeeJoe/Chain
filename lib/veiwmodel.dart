@@ -11,8 +11,16 @@ class GameViewModel extends ChangeNotifier {
   Map<Offset, Node> allNode = {};
   GameInfo gameInfo = GameInfo.empty();
 
+  bool gameOver = false;
+
+  restart() {
+    gameOver = false;
+    newGame(gameInfo);
+  }
+
   /// 开始新游戏
   newGame(GameInfo gameInfo) {
+    debugPrint("newGame gameInfo=$gameInfo");
     this.gameInfo = gameInfo;
     Map<Offset, Node> nodes = {};
     for (int y = 0; y < gameInfo.row; y++) {
@@ -123,6 +131,10 @@ class GameViewModel extends ChangeNotifier {
 
     _rebirthAllDeadNode();
     notifyListeners();
+
+    await Future.delayed(AnimationConfig.intervalDuration);
+
+    _checkGameOver();
   }
 
   _createNewNodeOnEmptySpace() {
@@ -145,6 +157,49 @@ class GameViewModel extends ChangeNotifier {
         allNode[coordinate] = Node.rebirth(node);
       }
     });
+  }
+
+  _checkGameOver() {
+    _updateGameOver();
+    notifyListeners();
+  }
+
+  _updateGameOver() {
+    for (var node in allNode.values) {
+      debugPrint("--------------- check current Node -> $node ---------------");
+      if (_neighborCanChain(node, [])) {
+        gameOver = false;
+        return;
+      }
+    }
+    gameOver = true;
+  }
+
+  /// 判断结点 [node] 和周围的结点能否链
+  bool _neighborCanChain(Node node, List<Node> chain) {
+    debugPrint("add to chain -> $node");
+    chain.add(node);
+    if (chain.length > 2) return true;
+    for (int x = -1; x < 2; x++) {
+      for (int y = -1; y < 2; y++) {
+        if (!(x == 0 && y == 0)) {
+          double dx = node.coordinate.dx + x;
+          double dy = node.coordinate.dy + y;
+          Node? neighbor = allNode[Offset(dx, dy)];
+          if (neighbor != null &&
+              neighbor.hasSameValue(node) &&
+              !chain.contains(neighbor)) {
+            return _neighborCanChain(neighbor, chain);
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  testGameOver() {
+    _updateGameOver();
+    debugPrint("testGameOver -> $gameOver");
   }
 }
 
