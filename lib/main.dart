@@ -1,5 +1,6 @@
 import 'package:chain/box.dart';
-import 'package:chain/model/game_info.dart';
+import 'package:chain/model/game_level.dart';
+import 'package:chain/model/game_status.dart';
 import 'package:chain/model/node.dart';
 import 'package:chain/veiwmodel.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +24,9 @@ class _MyGameState extends State<MyGame> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    GameInfo gameInfo =
-        GameInfo(level: 1, containerSize: MediaQuery.of(context).size);
-    Provider.of<GameViewModel>(context, listen: false).newGame(gameInfo);
+    GameLevel gameLevel =
+        GameLevel(level: 1, containerSize: MediaQuery.of(context).size);
+    Provider.of<GameViewModel>(context, listen: false).startLevel(gameLevel);
   }
 
   @override
@@ -56,13 +57,13 @@ class _MyGameState extends State<MyGame> {
         ],
       ),
       body: Center(
-        child: Selector<GameViewModel, bool>(
-          selector: (context, viewModel) => viewModel.gameOver,
-          builder: (BuildContext context, gameOver, Widget? child) {
+        child: Selector<GameViewModel, GameStatus>(
+          selector: (context, viewModel) => viewModel.gameStatus,
+          builder: (BuildContext context, gameStatus, Widget? child) {
             return Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              color: gameOver ? Colors.red[200] : Colors.blue[200],
+              color: gameStatus.gameOver ? Colors.red[200] : Colors.blue[200],
               child: GestureDetector(
                 onPanUpdate: (updateDetail) {
                   Provider.of<GameViewModel>(context, listen: false)
@@ -84,7 +85,7 @@ class _MyGameState extends State<MyGame> {
                               e,
                               key: ValueKey(e.id),
                             )),
-                        gameOver
+                        gameStatus.gameOver
                             ? const Align(
                                 alignment: AlignmentDirectional.center,
                                 child: Text(
@@ -93,6 +94,28 @@ class _MyGameState extends State<MyGame> {
                                 ),
                               )
                             : const SizedBox(),
+                        Align(
+                          alignment: AlignmentDirectional.topCenter,
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            color: Colors.red[200],
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Level: ${gameStatus.level}",
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.grey[200]),
+                                ),
+                                const SizedBox.square(dimension: 10),
+                                Text(
+                                  "Max Value: ${gameStatus.curMaxValue}",
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.grey[200]),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                       ],
                     );
                   },

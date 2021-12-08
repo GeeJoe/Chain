@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:chain/model/game_info.dart';
+import 'package:chain/model/game_level.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,16 +23,16 @@ class Node {
   })  : id = const Uuid().v1(),
         alive = true;
 
-  Node.random(GameInfo gameInfo, this.coordinate, {this.alive = true})
+  Node.random(GameLevel gameLevel, this.coordinate, {this.alive = true})
       : id = const Uuid().v1(),
-        value = 2 * (gameInfo.level - 1) + Random().nextInt(3),
-        size = Size.square(gameInfo.boxSize),
-        space = gameInfo.boxSpace,
+        value = 2 * (gameLevel.level - 1) + Random().nextInt(3),
+        size = Size.square(gameLevel.boxSize),
+        space = gameLevel.boxSpace,
         position = Offset(
-            gameInfo.startCoordinate.dx +
-                coordinate.dx * (gameInfo.boxSpace + gameInfo.boxSize),
-            gameInfo.startCoordinate.dy +
-                coordinate.dy * (gameInfo.boxSpace + gameInfo.boxSize));
+            gameLevel.startCoordinate.dx +
+                coordinate.dx * (gameLevel.boxSpace + gameLevel.boxSize),
+            gameLevel.startCoordinate.dy +
+                coordinate.dy * (gameLevel.boxSpace + gameLevel.boxSize));
 
   Node.value(Node origin, int newValue)
       : id = origin.id,

@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:chain/box.dart';
-import 'package:chain/model/game_info.dart';
+import 'package:chain/model/game_level.dart';
+import 'package:chain/model/game_status.dart';
 import 'package:chain/model/node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,28 +12,37 @@ class GameViewModel extends ChangeNotifier {
 
   List<Node> chain = [];
   Map<Offset, Node> allNode = {};
-  GameInfo gameInfo = GameInfo.empty();
+  GameLevel gameLevel = GameLevel(
+      level: 1,
+      containerSize: const Size(double.infinity, double.infinity),
+      boxSpace: 5);
+  GameStatus gameStatus = GameStatus();
 
-  bool gameOver = false;
-
+  /// 重新开始游戏
   restart() {
-    gameOver = false;
-    newGame(gameInfo);
+    startLevel(gameLevel);
   }
 
   /// 开始新游戏
-  newGame(GameInfo gameInfo) {
-    debugPrint("newGame gameInfo=$gameInfo");
-    this.gameInfo = gameInfo;
+  startLevel(GameLevel gameLevel) {
+    debugPrint("newLevel gameLevel=$gameLevel");
+    this.gameLevel = gameLevel;
     Map<Offset, Node> nodes = {};
-    for (int y = 0; y < gameInfo.row; y++) {
-      for (int x = 0; x < gameInfo.column; x++) {
+    for (int y = 0; y < gameLevel.row; y++) {
+      for (int x = 0; x < gameLevel.column; x++) {
         Offset coordinate = Offset(x.toDouble(), y.toDouble());
-        nodes[coordinate] = Node.random(gameInfo, coordinate);
+        nodes[coordinate] = Node.random(gameLevel, coordinate);
       }
     }
 
     allNode = nodes;
+
+    gameStatus = GameStatus(
+      gameOver: false,
+      level: gameLevel.level,
+      curMaxValue: _calculateCurrentMaxValue(),
+    );
+
     notifyListeners();
   }
 
@@ -134,16 +146,35 @@ class GameViewModel extends ChangeNotifier {
 
     await Future.delayed(AnimationConfig.intervalDuration);
 
-    _checkGameOver();
+    var maxValue = _calculateCurrentMaxValue();
+
+    if (maxValue >= gameLevel.nextLevelValue) {
+      gameLevel = GameLevel.levelUp(gameLevel);
+      // 超过最大等级
+      if (gameLevel.level > GameLevel.maxLevel) {
+        debugPrint("reach max level !!!!!!!1");
+      }
+      debugPrint("level up -> $gameLevel");
+      startLevel(gameLevel);
+      return;
+    }
+
+    gameStatus = GameStatus(
+      gameOver: _getGameOver(),
+      curMaxValue: maxValue,
+      level: gameStatus.level,
+    );
+    notifyListeners();
   }
 
   _createNewNodeOnEmptySpace() {
     debugPrint("createNewNodeOnEmptySpace");
-    for (int indexX = 0; indexX < gameInfo.column; indexX++) {
-      for (int indexY = 0; indexY < gameInfo.row; indexY++) {
+    for (int indexX = 0; indexX < gameLevel.column; indexX++) {
+      for (int indexY = 0; indexY < gameLevel.row; indexY++) {
         Offset coordinate = Offset(indexX.toDouble(), indexY.toDouble());
         if (allNode[coordinate] == null) {
-          allNode[coordinate] = Node.random(gameInfo, coordinate, alive: false);
+          allNode[coordinate] =
+              Node.random(gameLevel, coordinate, alive: false);
           debugPrint("new Node at $coordinate");
         }
       }
@@ -159,20 +190,23 @@ class GameViewModel extends ChangeNotifier {
     });
   }
 
-  _checkGameOver() {
-    _updateGameOver();
-    notifyListeners();
-  }
-
-  _updateGameOver() {
+  bool _getGameOver() {
     for (var node in allNode.values) {
       debugPrint("--------------- check current Node -> $node ---------------");
       if (_neighborCanChain(node, [])) {
-        gameOver = false;
-        return;
+        return false;
       }
     }
-    gameOver = true;
+    return true;
+  }
+
+  _calculateCurrentMaxValue() {
+    int maxValue = 0;
+    for (var node in allNode.values) {
+      maxValue = max(maxValue, node.value);
+    }
+    debugPrint("calculateCurrentMaxValue -> $maxValue");
+    return maxValue;
   }
 
   /// 判断结点 [node] 和周围的结点能否链
@@ -198,8 +232,8 @@ class GameViewModel extends ChangeNotifier {
   }
 
   testGameOver() {
-    _updateGameOver();
-    debugPrint("testGameOver -> $gameOver");
+    bool over = _getGameOver();
+    debugPrint("testGameOver -> $over");
   }
 }
 
