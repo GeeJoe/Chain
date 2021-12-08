@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:chain/model/game_info.dart';
 import 'package:chain/model/node.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,7 +8,6 @@ class GameViewModel extends ChangeNotifier {
 
   List<Node> chain = [];
   Map<Offset, Node> allNode = {};
-  final Map<int, int> _columnEmptyCount = {}; // 记录每列头部有多少空位
   GameInfo gameInfo = GameInfo.empty();
 
   /// 开始新游戏
@@ -28,7 +25,7 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 当手机滑动的时候触发更新
+  /// 当手指滑动的时候触发更新
   updatePointer(Offset? pointer) {
     this.pointer = pointer;
     for (var node in allNode.values) {
@@ -75,7 +72,7 @@ class GameViewModel extends ChangeNotifier {
   }
 
   /// 手指离开屏幕的时候更新
-  endPointer() {
+  endPointer() async {
     // 没有链什么都不用处理
     if (chain.isEmpty) {
       return;
@@ -95,7 +92,7 @@ class GameViewModel extends ChangeNotifier {
         Node.value(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
     allNode[mergeNode.coordinate] = mergeNode;
 
-    // 除链尾之后，将所有链中其余结点标记为 dead
+    // 除链尾之外，将所有链中其余结点标记为 dead
     for (var chainedNode in chain.take(chain.length - 1)) {
       Node deadNode = Node.dead(chainedNode);
       allNode[deadNode.coordinate] = deadNode;
@@ -106,11 +103,7 @@ class GameViewModel extends ChangeNotifier {
     for (var node in allNode.values) {
       var nodesBelow = allNode.values.findAllNodeBelow(node);
       // 计算出当前结点要下降几格
-      var chainedNodeCountBelow =
-          nodesBelow.countWhere((n) => n.alive == false);
-      int indexX = node.coordinate.dx.toInt();
-      _columnEmptyCount[indexX] =
-          max(_columnEmptyCount[indexX] ?? 0, chainedNodeCountBelow);
+      var chainedNodeCountBelow = nodesBelow.countWhere((n) => n.isDead());
       Node newNode = Node.fall(node, chainedNodeCountBelow);
       if (newNode.alive) {
         newAllNode[newNode.coordinate] = newNode;
@@ -120,19 +113,23 @@ class GameViewModel extends ChangeNotifier {
 
     chain = [];
     notifyListeners();
+
+    await Future.delayed(const Duration(milliseconds: 100));
+    _createNewNodeOnEmptySpace();
+    notifyListeners();
   }
 
   _createNewNodeOnEmptySpace() {
-    // _columnEmptyCount.forEach((indexX, emptyCount) {
-    //   for (int indexY = 0; indexY < emptyCount; indexY++) {
-    //     allNode[Offset(indexX.toDouble(), indexY.toDouble())] = Node(
-    //         position: position,
-    //         coordinate: coordinate,
-    //         value: value,
-    //         size: size,
-    //         margin: margin);
-    //   }
-    // });
+    debugPrint("createNewNodeOnEmptySpace");
+    for (int indexX = 0; indexX < gameInfo.column; indexX++) {
+      for (int indexY = 0; indexY < gameInfo.row; indexY++) {
+        Offset coordinate = Offset(indexX.toDouble(), indexY.toDouble());
+        if (allNode[coordinate] == null) {
+          allNode[coordinate] = Node.random(gameInfo, coordinate);
+          debugPrint("new Node at $coordinate");
+        }
+      }
+    }
   }
 
   testFall() {

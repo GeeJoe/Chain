@@ -26,7 +26,7 @@ class Node {
   Node.random(GameInfo gameInfo, this.coordinate)
       : id = const Uuid().v1(),
         alive = true,
-        value = Random().nextInt(3),
+        value = 2 * (gameInfo.level - 1) + Random().nextInt(3),
         size = Size.square(gameInfo.boxSize),
         space = gameInfo.boxSpace,
         position = Offset(
@@ -62,6 +62,10 @@ class Node {
         space = origin.space,
         position = origin.position,
         coordinate = origin.coordinate;
+
+  bool isDead() {
+    return alive == false;
+  }
 
   bool isPointerIn(Offset? pointer) {
     if (pointer == null) return false;
