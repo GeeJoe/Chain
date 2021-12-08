@@ -1,4 +1,4 @@
-import 'package:chain/node.dart';
+import 'package:chain/model/node.dart';
 import 'package:chain/veiwmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

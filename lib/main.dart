@@ -1,5 +1,6 @@
 import 'package:chain/box.dart';
-import 'package:chain/node.dart';
+import 'package:chain/model/game_info.dart';
+import 'package:chain/model/node.dart';
 import 'package:chain/veiwmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,11 +27,11 @@ class _MyGameState extends State<MyGame> {
         actions: [
           TextButton(
             onPressed: () {
-              Provider.of<GameViewModel>(context, listen: false).newGame(
-                MediaQuery.of(context).size.width,
-                MediaQuery.of(context).size.height,
-                GameInfo(column: 6, row: 8),
-              );
+              GameInfo gameInfo = GameInfo(
+                  level: 1, containerSize: MediaQuery.of(context).size);
+              Provider.of<GameViewModel>(context, listen: false)
+                  .newGame(gameInfo);
+              debugPrint("gameInfo=$gameInfo");
             },
             child: const Text(
               "重新开始",
@@ -52,44 +53,37 @@ class _MyGameState extends State<MyGame> {
           ),
         ],
       ),
-      body: GestureDetector(
-        onPanUpdate: (updateDetail) {
-          Provider.of<GameViewModel>(context, listen: false)
-              .updatePointer(updateDetail.localPosition);
-        },
-        onPanEnd: (_) {
-          Provider.of<GameViewModel>(context, listen: false)
-            ..updatePointer(null)
-            ..endPointer();
-        },
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return Center(
-              child: Selector<GameViewModel, List<Node>>(
-                selector: (context, viewModel) =>
-                    viewModel.allNode.values.toList(),
-                builder: (BuildContext context, allNode, Widget? child) {
-                  debugPrint("new pad");
-                  var pad = allNode
-                      .map((e) => Box(
-                            e,
-                            key: ValueKey(e.id),
-                          ))
-                      .toList();
-                  return Stack(
-                    children: [
-                      Container(
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                        color: Colors.blue[200],
-                      ),
-                      ...pad,
-                    ],
-                  );
-                },
-              ),
-            );
-          },
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          color: Colors.blue[200],
+          child: GestureDetector(
+            onPanUpdate: (updateDetail) {
+              Provider.of<GameViewModel>(context, listen: false)
+                  .updatePointer(updateDetail.localPosition);
+            },
+            onPanEnd: (_) {
+              Provider.of<GameViewModel>(context, listen: false)
+                ..updatePointer(null)
+                ..endPointer();
+            },
+            child: Selector<GameViewModel, List<Node>>(
+              selector: (context, viewModel) =>
+                  viewModel.allNode.values.toList(),
+              builder: (BuildContext context, allNode, Widget? child) {
+                debugPrint("new pad");
+                return Stack(
+                  children: [
+                    ...allNode.map((e) => Box(
+                          e,
+                          key: ValueKey(e.id),
+                        )),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -1,58 +1,26 @@
 import 'dart:math';
 
-import 'package:chain/node.dart';
+import 'package:chain/model/game_info.dart';
+import 'package:chain/model/node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-class GameInfo {
-  int column;
-  int row;
-
-  GameInfo({
-    required this.column,
-    required this.row,
-  });
-}
 
 class GameViewModel extends ChangeNotifier {
   Offset? pointer;
 
   List<Node> chain = [];
   Map<Offset, Node> allNode = {};
-  GameInfo gameInfo = GameInfo(column: 0, row: 0);
+  final Map<int, int> _columnEmptyCount = {}; // 记录每列头部有多少空位
+  GameInfo gameInfo = GameInfo.empty();
 
   /// 开始新游戏
-  newGame(double parentMaxWidth, double parentMaxHeight, GameInfo gameInfo) {
+  newGame(GameInfo gameInfo) {
     this.gameInfo = gameInfo;
-    int column = gameInfo.column;
-    int row = gameInfo.row;
-    debugPrint("newGame, column=$column, row=$row");
-    double space = 5;
-    double maxContainerWidth = parentMaxWidth * 0.8;
-    double maxContainerHeight = parentMaxHeight * 0.8;
-
-    double horizontalSpace = (column - 1) * space;
-    double verticalSpace = (row - 1) * space;
-
-    double boxSize = (maxContainerWidth - horizontalSpace) / column;
-    double startX = (parentMaxWidth - maxContainerWidth) / 2;
-    double startY = ((parentMaxHeight - maxContainerHeight) / 2) +
-        ((maxContainerHeight - (row * boxSize) - verticalSpace) / 2);
-
     Map<Offset, Node> nodes = {};
-    for (int y = 0; y < row; y++) {
-      for (int x = 0; x < column; x++) {
-        double boxX = startX + x * (boxSize + space);
-        double boxY = startY + y * (boxSize + space);
-        int value = Random().nextInt(3);
+    for (int y = 0; y < gameInfo.row; y++) {
+      for (int x = 0; x < gameInfo.column; x++) {
         Offset coordinate = Offset(x.toDouble(), y.toDouble());
-        nodes[coordinate] = Node(
-          position: Offset(boxX, boxY),
-          coordinate: coordinate,
-          value: value,
-          size: Size.square(boxSize),
-          margin: EdgeInsets.symmetric(vertical: space, horizontal: space),
-        );
+        nodes[coordinate] = Node.random(gameInfo, coordinate);
       }
     }
 
@@ -120,8 +88,15 @@ class GameViewModel extends ChangeNotifier {
     }
     // 走到这里说明可以得分
 
-    // 将所有链中的结点标记为 dead
-    for (var chainedNode in chain) {
+    // 将链尾结点 value 更新为链中结点的 merge 值
+    // 每三个就合成下一个数，不足三个不忽略
+    Node lastChainedNode = chain.last;
+    Node mergeNode =
+        Node.value(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
+    allNode[mergeNode.coordinate] = mergeNode;
+
+    // 除链尾之后，将所有链中其余结点标记为 dead
+    for (var chainedNode in chain.take(chain.length - 1)) {
       Node deadNode = Node.dead(chainedNode);
       allNode[deadNode.coordinate] = deadNode;
     }
@@ -133,6 +108,9 @@ class GameViewModel extends ChangeNotifier {
       // 计算出当前结点要下降几格
       var chainedNodeCountBelow =
           nodesBelow.countWhere((n) => n.alive == false);
+      int indexX = node.coordinate.dx.toInt();
+      _columnEmptyCount[indexX] =
+          max(_columnEmptyCount[indexX] ?? 0, chainedNodeCountBelow);
       Node newNode = Node.fall(node, chainedNodeCountBelow);
       if (newNode.alive) {
         newAllNode[newNode.coordinate] = newNode;
@@ -142,6 +120,19 @@ class GameViewModel extends ChangeNotifier {
 
     chain = [];
     notifyListeners();
+  }
+
+  _createNewNodeOnEmptySpace() {
+    // _columnEmptyCount.forEach((indexX, emptyCount) {
+    //   for (int indexY = 0; indexY < emptyCount; indexY++) {
+    //     allNode[Offset(indexX.toDouble(), indexY.toDouble())] = Node(
+    //         position: position,
+    //         coordinate: coordinate,
+    //         value: value,
+    //         size: size,
+    //         margin: margin);
+    //   }
+    // });
   }
 
   testFall() {

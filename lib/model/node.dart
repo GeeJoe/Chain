@@ -1,5 +1,7 @@
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:chain/model/game_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
@@ -9,7 +11,7 @@ class Node {
   final Offset coordinate;
   final int value;
   final Size size;
-  final EdgeInsets margin;
+  final double space;
   final bool alive;
 
   Node({
@@ -17,20 +19,39 @@ class Node {
     required this.coordinate,
     required this.value,
     required this.size,
-    required this.margin,
+    required this.space,
   })  : id = const Uuid().v1(),
         alive = true;
+
+  Node.random(GameInfo gameInfo, this.coordinate)
+      : id = const Uuid().v1(),
+        alive = true,
+        value = Random().nextInt(3),
+        size = Size.square(gameInfo.boxSize),
+        space = gameInfo.boxSpace,
+        position = Offset(
+            gameInfo.startCoordinate.dx +
+                coordinate.dx * (gameInfo.boxSpace + gameInfo.boxSize),
+            gameInfo.startCoordinate.dy +
+                coordinate.dy * (gameInfo.boxSpace + gameInfo.boxSize));
+
+  Node.value(Node origin, int newValue)
+      : id = origin.id,
+        alive = origin.alive,
+        value = newValue,
+        size = origin.size,
+        space = origin.space,
+        position = origin.position,
+        coordinate = origin.coordinate;
 
   Node.fall(Node origin, int step)
       : id = origin.id,
         alive = origin.alive,
         value = origin.value,
         size = origin.size,
-        margin = origin.margin,
-        position = Offset(
-            origin.position.dx,
-            origin.position.dy +
-                (origin.size.height + origin.margin.top) * step),
+        space = origin.space,
+        position = Offset(origin.position.dx,
+            origin.position.dy + (origin.size.height + origin.space) * step),
         coordinate = Offset(origin.coordinate.dx, origin.coordinate.dy + step);
 
   Node.dead(Node origin)
@@ -38,7 +59,7 @@ class Node {
         alive = false,
         value = origin.value,
         size = origin.size,
-        margin = origin.margin,
+        space = origin.space,
         position = origin.position,
         coordinate = origin.coordinate;
 
