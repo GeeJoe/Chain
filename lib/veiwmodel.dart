@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:chain/node.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class GameInfo {
   int column;
@@ -41,8 +42,8 @@ class GameViewModel extends ChangeNotifier {
     Map<Offset, Node> nodes = {};
     for (int y = 0; y < row; y++) {
       for (int x = 0; x < column; x++) {
-        double boxX = startX + (x * boxSize) + (x * space);
-        double boxY = startY + (y * boxSize) + (y * space);
+        double boxX = startX + x * (boxSize + space);
+        double boxY = startY + y * (boxSize + space);
         int value = Random().nextInt(3);
         Offset coordinate = Offset(x.toDouble(), y.toDouble());
         nodes[coordinate] = Node(
@@ -50,6 +51,7 @@ class GameViewModel extends ChangeNotifier {
           coordinate: coordinate,
           value: value,
           size: Size.square(boxSize),
+          margin: EdgeInsets.symmetric(vertical: space, horizontal: space),
         );
       }
     }
@@ -118,25 +120,42 @@ class GameViewModel extends ChangeNotifier {
     }
     // 走到这里说明可以得分
 
-    // 移除所有链中的结点
+    // 将所有链中的结点标记为 dead
     for (var chainedNode in chain) {
-      allNode.remove(chainedNode.coordinate);
+      Node deadNode = Node.dead(chainedNode);
+      allNode[deadNode.coordinate] = deadNode;
     }
 
     // 所有空位上面的结点下降
+    Map<Offset, Node> newAllNode = {};
     for (var node in allNode.values) {
       var nodesBelow = allNode.values.findAllNodeBelow(node);
-      var chainedNodeCount = chain.countWhere((n) => nodesBelow.contains(n));
-
+      // 计算出当前结点要下降几格
+      var chainedNodeCountBelow =
+          nodesBelow.countWhere((n) => n.alive == false);
+      Node newNode = Node.fall(node, chainedNodeCountBelow);
+      if (newNode.alive) {
+        newAllNode[newNode.coordinate] = newNode;
+      }
     }
+    allNode = newAllNode;
 
     chain = [];
+    notifyListeners();
+  }
+
+  testFall() {
+    Node first = allNode.values.first;
+    debugPrint("first Node=$first");
+    Node newNode = Node.fall(first, 1);
+    allNode.remove(first.coordinate);
+    allNode[newNode.coordinate] = newNode;
+
     notifyListeners();
   }
 }
 
 extension NodesUtil on Iterable<Node> {
-
   /// 计算有多少个符合 [where] 的 item
   int countWhere(bool Function(Node node) where) {
     int count = 0;

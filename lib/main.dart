@@ -29,11 +29,22 @@ class _MyGameState extends State<MyGame> {
               Provider.of<GameViewModel>(context, listen: false).newGame(
                 MediaQuery.of(context).size.width,
                 MediaQuery.of(context).size.height,
-                GameInfo(column: 4, row: 4),
+                GameInfo(column: 6, row: 8),
               );
             },
             child: const Text(
               "重新开始",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Provider.of<GameViewModel>(context, listen: false).testFall();
+            },
+            child: const Text(
+              "调试下降",
               style: TextStyle(
                 color: Colors.white,
               ),
@@ -57,7 +68,6 @@ class _MyGameState extends State<MyGame> {
               child: Selector<GameViewModel, List<Node>>(
                 selector: (context, viewModel) =>
                     viewModel.allNode.values.toList(),
-                shouldRebuild: (_, __) => true,
                 builder: (BuildContext context, allNode, Widget? child) {
                   debugPrint("new pad");
                   var pad = allNode

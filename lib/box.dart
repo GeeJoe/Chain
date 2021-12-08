@@ -16,7 +16,8 @@ class Box extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedPositioned(
-      duration: const Duration(microseconds: 500),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutBack,
       left: node.position.dx,
       top: node.position.dy,
       child: SizedBox.fromSize(

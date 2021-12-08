@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
 class Node {
@@ -8,13 +9,38 @@ class Node {
   final Offset coordinate;
   final int value;
   final Size size;
+  final EdgeInsets margin;
+  final bool alive;
 
   Node({
     required this.position,
     required this.coordinate,
     required this.value,
     required this.size,
-  }) : id = const Uuid().v1();
+    required this.margin,
+  })  : id = const Uuid().v1(),
+        alive = true;
+
+  Node.fall(Node origin, int step)
+      : id = origin.id,
+        alive = origin.alive,
+        value = origin.value,
+        size = origin.size,
+        margin = origin.margin,
+        position = Offset(
+            origin.position.dx,
+            origin.position.dy +
+                (origin.size.height + origin.margin.top) * step),
+        coordinate = Offset(origin.coordinate.dx, origin.coordinate.dy + step);
+
+  Node.dead(Node origin)
+      : id = origin.id,
+        alive = false,
+        value = origin.value,
+        size = origin.size,
+        margin = origin.margin,
+        position = origin.position,
+        coordinate = origin.coordinate;
 
   bool isPointerIn(Offset? pointer) {
     if (pointer == null) return false;
