@@ -5,6 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
+class AnimationConfig {
+  static Duration fallDuration = const Duration(milliseconds: 300);
+  static Duration popDuration = const Duration(milliseconds: 300);
+  static Duration intervalDuration = const Duration(milliseconds: 100);
+}
+
 class Box extends StatelessWidget {
   final Node node;
 
@@ -16,16 +22,20 @@ class Box extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedPositioned(
-      duration: const Duration(milliseconds: 300),
+      duration: AnimationConfig.fallDuration,
       curve: Curves.easeInOutBack,
       left: node.position.dx,
       top: node.position.dy,
-      child: SizedBox.fromSize(
-        size: node.size,
-        child: Selector<GameViewModel, List<Node>>(
-          selector: (context, viewModel) => viewModel.chain,
-          builder: (BuildContext context, chain, Widget? child) {
-            return Container(
+      child: Selector<GameViewModel, List<Node>>(
+        selector: (context, viewModel) => viewModel.chain,
+        builder: (BuildContext context, chain, Widget? child) {
+          return AnimatedScale(
+            duration: AnimationConfig.popDuration,
+            curve: Curves.easeInOutBack,
+            scale: node.alive ? 1 : 0,
+            child: Container(
+              width: node.size.width,
+              height: node.size.height,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 border: chain.contains(node)
@@ -34,16 +44,16 @@ class Box extends StatelessWidget {
                 color: Colors.orange[200],
               ),
               child: child!,
-            );
-          },
-          child: Center(
-            child: Text(
-              "${node.value}",
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            ),
+          );
+        },
+        child: Center(
+          child: Text(
+            "${node.value}",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

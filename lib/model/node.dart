@@ -23,9 +23,8 @@ class Node {
   })  : id = const Uuid().v1(),
         alive = true;
 
-  Node.random(GameInfo gameInfo, this.coordinate)
+  Node.random(GameInfo gameInfo, this.coordinate, {this.alive = true})
       : id = const Uuid().v1(),
-        alive = true,
         value = 2 * (gameInfo.level - 1) + Random().nextInt(3),
         size = Size.square(gameInfo.boxSize),
         space = gameInfo.boxSpace,
@@ -57,6 +56,15 @@ class Node {
   Node.dead(Node origin)
       : id = origin.id,
         alive = false,
+        value = origin.value,
+        size = origin.size,
+        space = origin.space,
+        position = origin.position,
+        coordinate = origin.coordinate;
+
+  Node.rebirth(Node origin)
+      : id = origin.id,
+        alive = true,
         value = origin.value,
         size = origin.size,
         space = origin.space,
@@ -97,23 +105,4 @@ class Node {
   String toString() {
     return 'Node{id: $id, position: $position, coordinate: $coordinate, value: $value, size: $size}';
   }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Node &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          position == other.position &&
-          coordinate == other.coordinate &&
-          value == other.value &&
-          size == other.size;
-
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      position.hashCode ^
-      coordinate.hashCode ^
-      value.hashCode ^
-      size.hashCode;
 }

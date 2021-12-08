@@ -40,17 +40,6 @@ class _MyGameState extends State<MyGame> {
               ),
             ),
           ),
-          TextButton(
-            onPressed: () {
-              Provider.of<GameViewModel>(context, listen: false).testFall();
-            },
-            child: const Text(
-              "调试下降",
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-          ),
         ],
       ),
       body: Center(

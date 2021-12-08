@@ -1,3 +1,4 @@
+import 'package:chain/box.dart';
 import 'package:chain/model/game_info.dart';
 import 'package:chain/model/node.dart';
 import 'package:flutter/cupertino.dart';
@@ -98,6 +99,11 @@ class GameViewModel extends ChangeNotifier {
       allNode[deadNode.coordinate] = deadNode;
     }
 
+    chain = [];
+    notifyListeners();
+
+    await Future.delayed(AnimationConfig.intervalDuration);
+
     // 所有空位上面的结点下降
     Map<Offset, Node> newAllNode = {};
     for (var node in allNode.values) {
@@ -110,12 +116,12 @@ class GameViewModel extends ChangeNotifier {
       }
     }
     allNode = newAllNode;
-
-    chain = [];
+    _createNewNodeOnEmptySpace();
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 100));
-    _createNewNodeOnEmptySpace();
+    await Future.delayed(AnimationConfig.intervalDuration);
+
+    _rebirthAllDeadNode();
     notifyListeners();
   }
 
@@ -125,21 +131,20 @@ class GameViewModel extends ChangeNotifier {
       for (int indexY = 0; indexY < gameInfo.row; indexY++) {
         Offset coordinate = Offset(indexX.toDouble(), indexY.toDouble());
         if (allNode[coordinate] == null) {
-          allNode[coordinate] = Node.random(gameInfo, coordinate);
+          allNode[coordinate] = Node.random(gameInfo, coordinate, alive: false);
           debugPrint("new Node at $coordinate");
         }
       }
     }
   }
 
-  testFall() {
-    Node first = allNode.values.first;
-    debugPrint("first Node=$first");
-    Node newNode = Node.fall(first, 1);
-    allNode.remove(first.coordinate);
-    allNode[newNode.coordinate] = newNode;
-
-    notifyListeners();
+  _rebirthAllDeadNode() {
+    debugPrint("rebirthAllDeadNode");
+    allNode.forEach((coordinate, node) {
+      if (node.isDead()) {
+        allNode[coordinate] = Node.rebirth(node);
+      }
+    });
   }
 }
 
