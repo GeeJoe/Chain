@@ -68,12 +68,12 @@ class GameLevel {
       case 3:
         column = 4;
         row = 6;
-        nextLevelValue = 16;
+        nextLevelValue = 12;
         break;
       case 4:
         column = 6;
         row = 6;
-        nextLevelValue = 32;
+        nextLevelValue = 16;
         break;
       case 5:
         column = 6;

@@ -75,51 +75,57 @@ class _MyGameState extends State<MyGame> {
                     ..endPointer();
                 },
                 child: Selector<GameViewModel, List<Node>>(
-                  selector: (context, viewModel) =>
-                      viewModel.allNode.values.toList(),
-                  builder: (BuildContext context, allNode, Widget? child) {
-                    debugPrint("new pad");
-                    return Stack(
-                      children: [
-                        ...allNode.map((e) => Box(
-                              e,
-                              key: ValueKey(e.id),
-                            )),
-                        gameStatus.gameOver
-                            ? const Align(
-                                alignment: AlignmentDirectional.center,
-                                child: Text(
-                                  "Game Over",
-                                  style: TextStyle(fontSize: 30),
-                                ),
-                              )
-                            : const SizedBox(),
-                        Align(
-                          alignment: AlignmentDirectional.topCenter,
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            color: Colors.red[200],
-                            child: Row(
-                              children: [
-                                Text(
-                                  "Level: ${gameStatus.level}",
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.grey[200]),
-                                ),
-                                const SizedBox.square(dimension: 10),
-                                Text(
-                                  "Max Value: ${gameStatus.curMaxValue}",
-                                  style: TextStyle(
-                                      fontSize: 15, color: Colors.grey[200]),
-                                ),
-                              ],
+                    selector: (context, viewModel) =>
+                        viewModel.allNode.values.toList(),
+                    builder: (BuildContext context, allNode, Widget? child) {
+                      debugPrint("new pad");
+                      return Stack(
+                        children: [
+                          ...allNode.map((e) => Box(
+                                e,
+                                key: ValueKey(e.id),
+                              )),
+                          gameStatus.gameOver
+                              ? const Align(
+                                  alignment: AlignmentDirectional.center,
+                                  child: Text(
+                                    "Game Over",
+                                    style: TextStyle(fontSize: 30),
+                                  ),
+                                )
+                              : const SizedBox(),
+                          child!,
+                        ],
+                      );
+                    },
+                    child: Align(
+                      alignment: AlignmentDirectional.topCenter,
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.red[200],
+                        child: Row(
+                          children: [
+                            Text(
+                              "Level: ${gameStatus.level?.level}",
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.grey[200]),
                             ),
-                          ),
-                        )
-                      ],
-                    );
-                  },
-                ),
+                            const SizedBox.square(dimension: 10),
+                            Text(
+                              "Max Value: ${gameStatus.curMaxValue}",
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.grey[200]),
+                            ),
+                            const SizedBox.square(dimension: 10),
+                            Text(
+                              "Goal Value: ${gameStatus.level?.nextLevelValue.toInt()}",
+                              style: TextStyle(
+                                  fontSize: 15, color: Colors.grey[200]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
               ),
             );
           },

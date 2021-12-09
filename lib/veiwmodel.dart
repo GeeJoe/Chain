@@ -39,7 +39,7 @@ class GameViewModel extends ChangeNotifier {
 
     gameStatus = GameStatus(
       gameOver: false,
-      level: gameLevel.level,
+      level: gameLevel,
       curMaxValue: _calculateCurrentMaxValue(),
     );
 
@@ -106,18 +106,22 @@ class GameViewModel extends ChangeNotifier {
     }
     // 走到这里说明可以得分
 
+    // 除链尾之外，将所有链中其余结点标记为 dead
+    for (var chainedNode in chain.take(chain.length - 1)) {
+      Node deadNode = Node.dead(chainedNode);
+      allNode[deadNode.coordinate] = deadNode;
+    }
+
+    notifyListeners();
+
+    await Future.delayed(AnimationConfig.intervalDuration);
+
     // 将链尾结点 value 更新为链中结点的 merge 值
     // 每三个就合成下一个数，不足三个不忽略
     Node lastChainedNode = chain.last;
     Node mergeNode =
         Node.value(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
     allNode[mergeNode.coordinate] = mergeNode;
-
-    // 除链尾之外，将所有链中其余结点标记为 dead
-    for (var chainedNode in chain.take(chain.length - 1)) {
-      Node deadNode = Node.dead(chainedNode);
-      allNode[deadNode.coordinate] = deadNode;
-    }
 
     chain = [];
     notifyListeners();

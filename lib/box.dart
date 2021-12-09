@@ -33,7 +33,9 @@ class Box extends StatelessWidget {
             duration: AnimationConfig.popDuration,
             curve: Curves.easeInOutBack,
             scale: node.alive ? 1 : 0,
-            child: Container(
+            child: AnimatedContainer(
+              duration: AnimationConfig.intervalDuration,
+              curve: Curves.easeInOutBack,
               width: node.size.width,
               height: node.size.height,
               decoration: BoxDecoration(

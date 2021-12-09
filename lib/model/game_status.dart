@@ -1,17 +1,19 @@
+import 'package:chain/model/game_level.dart';
+
 class GameStatus {
   final bool gameOver;
   final int curMaxValue;
-  final int level;
+  GameLevel? level;
 
   GameStatus({
     this.gameOver = false,
     this.curMaxValue = 0,
-    this.level = 1,
+    this.level,
   });
 
   @override
   String toString() {
-    return 'GameStatus{gameOver: $gameOver, curMaxValue: $curMaxValue, level: $level}';
+    return 'GameStatus{gameOver: $gameOver, curMaxValue: $curMaxValue, level: ${level?.level}}';
   }
 
   @override
