@@ -120,13 +120,13 @@ class GameViewModel extends ChangeNotifier {
     // 每三个就合成下一个数，不足三个不忽略
     Node lastChainedNode = chain.last;
     Node mergeNode =
-        Node.value(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
+        Node.merge(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
     allNode[mergeNode.coordinate] = mergeNode;
 
     chain = [];
     notifyListeners();
 
-    await Future.delayed(AnimationConfig.intervalDuration);
+    await Future.delayed(AnimationConfig.popDuration);
 
     // 所有空位上面的结点下降
     Map<Offset, Node> newAllNode = {};

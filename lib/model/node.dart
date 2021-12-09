@@ -13,6 +13,7 @@ class Node {
   final Size size;
   final double space;
   final bool alive;
+  final bool merge;
 
   Node({
     required this.position,
@@ -21,7 +22,8 @@ class Node {
     required this.size,
     required this.space,
   })  : id = const Uuid().v1(),
-        alive = true;
+        alive = true,
+        merge = false;
 
   Node.random(GameLevel gameLevel, this.coordinate, {this.alive = true})
       : id = const Uuid().v1(),
@@ -32,16 +34,18 @@ class Node {
             gameLevel.startCoordinate.dx +
                 coordinate.dx * (gameLevel.boxSpace + gameLevel.boxSize),
             gameLevel.startCoordinate.dy +
-                coordinate.dy * (gameLevel.boxSpace + gameLevel.boxSize));
+                coordinate.dy * (gameLevel.boxSpace + gameLevel.boxSize)),
+        merge = false;
 
-  Node.value(Node origin, int newValue)
+  Node.merge(Node origin, int newValue)
       : id = origin.id,
         alive = origin.alive,
         value = newValue,
         size = origin.size,
         space = origin.space,
         position = origin.position,
-        coordinate = origin.coordinate;
+        coordinate = origin.coordinate,
+        merge = true;
 
   Node.fall(Node origin, int step)
       : id = origin.id,
@@ -51,7 +55,8 @@ class Node {
         space = origin.space,
         position = Offset(origin.position.dx,
             origin.position.dy + (origin.size.height + origin.space) * step),
-        coordinate = Offset(origin.coordinate.dx, origin.coordinate.dy + step);
+        coordinate = Offset(origin.coordinate.dx, origin.coordinate.dy + step),
+        merge = false;
 
   Node.dead(Node origin)
       : id = origin.id,
@@ -60,7 +65,8 @@ class Node {
         size = origin.size,
         space = origin.space,
         position = origin.position,
-        coordinate = origin.coordinate;
+        coordinate = origin.coordinate,
+        merge = false;
 
   Node.rebirth(Node origin)
       : id = origin.id,
@@ -69,7 +75,8 @@ class Node {
         size = origin.size,
         space = origin.space,
         position = origin.position,
-        coordinate = origin.coordinate;
+        coordinate = origin.coordinate,
+        merge = false;
 
   bool isDead() {
     return alive == false;

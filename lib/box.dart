@@ -32,7 +32,11 @@ class Box extends StatelessWidget {
           return AnimatedScale(
             duration: AnimationConfig.popDuration,
             curve: Curves.easeInOutBack,
-            scale: node.alive ? 1 : 0,
+            scale: node.merge
+                ? 1.05
+                : node.alive
+                    ? 1
+                    : 0,
             child: AnimatedContainer(
               duration: AnimationConfig.intervalDuration,
               curve: Curves.easeInOutBack,
@@ -43,7 +47,7 @@ class Box extends StatelessWidget {
                 border: chain.contains(node)
                     ? Border.all(color: Colors.yellow, width: 4)
                     : null,
-                color: Colors.orange[200],
+                color: node.merge ? Colors.orange[300] : Colors.orange[200],
               ),
               child: child!,
             ),
