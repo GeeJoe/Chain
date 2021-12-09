@@ -26,9 +26,12 @@ class Box extends StatelessWidget {
       curve: Curves.easeInOutBack,
       left: node.position.dx,
       top: node.position.dy,
-      child: Selector<GameViewModel, List<Node>>(
-        selector: (context, viewModel) => viewModel.chain,
-        builder: (BuildContext context, chain, Widget? child) {
+      child: Selector<GameViewModel, bool>(
+        selector: (context, viewModel) => viewModel.chain.contains(node),
+        builder: (BuildContext context, selected, Widget? child) {
+          int level = Provider.of<GameViewModel>(context, listen: false)
+              .gameLevel
+              .level;
           return AnimatedScale(
             duration: AnimationConfig.popDuration,
             curve: Curves.easeInOutBack,
@@ -44,10 +47,12 @@ class Box extends StatelessWidget {
               height: node.size.height,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                border: chain.contains(node)
+                border: selected
                     ? Border.all(color: Colors.yellow, width: 4)
                     : null,
-                color: node.merge ? Colors.orange[300] : Colors.orange[200],
+                color: node.merge
+                    ? Colors.orange[900]
+                    : _colorByValue(level, node.value),
               ),
               child: child!,
             ),
@@ -66,4 +71,15 @@ class Box extends StatelessWidget {
       ),
     );
   }
+}
+
+final List<Color?> _colors = [
+  Colors.orange[200],
+  Colors.orange[300],
+  Colors.orange[400],
+];
+
+Color? _colorByValue(int level, int value) {
+  int index = (value - (level - 1) * 2) % _colors.length;
+  return _colors[index];
 }

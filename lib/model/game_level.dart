@@ -36,7 +36,7 @@ class GameLevel {
   late final int row;
   late final double boxSize;
   late final Offset startCoordinate;
-  late final double nextLevelValue;
+  late final int nextLevelValue;
 
   GameLevel({
     required this.level,
@@ -58,27 +58,27 @@ class GameLevel {
       case 1:
         column = 3;
         row = 3;
-        nextLevelValue = 4;
+        nextLevelValue = 3;
         break;
       case 2:
         column = 4;
         row = 4;
-        nextLevelValue = 8;
+        nextLevelValue = 5;
         break;
       case 3:
         column = 4;
         row = 6;
-        nextLevelValue = 12;
+        nextLevelValue = 7;
         break;
       case 4:
         column = 6;
         row = 6;
-        nextLevelValue = 16;
+        nextLevelValue = 9;
         break;
       case 5:
         column = 6;
         row = 8;
-        nextLevelValue = double.infinity;
+        nextLevelValue = 99999999;
         break;
       default:
         column = 0;

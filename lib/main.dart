@@ -21,12 +21,19 @@ class MyGame extends StatefulWidget {
 }
 
 class _MyGameState extends State<MyGame> {
+  GameViewModel? gameViewModel;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    GameLevel gameLevel =
-        GameLevel(level: 1, containerSize: MediaQuery.of(context).size);
-    Provider.of<GameViewModel>(context, listen: false).startLevel(gameLevel);
+    final gameViewModel = Provider.of<GameViewModel>(context, listen: false);
+    if (this.gameViewModel != gameViewModel) {
+      this.gameViewModel = gameViewModel;
+
+      GameLevel gameLevel =
+          GameLevel(level: 1, containerSize: MediaQuery.of(context).size);
+      gameViewModel.startLevel(gameLevel);
+    }
   }
 
   @override
@@ -118,7 +125,7 @@ class _MyGameState extends State<MyGame> {
                             ),
                             const SizedBox.square(dimension: 10),
                             Text(
-                              "Goal Value: ${gameStatus.level?.nextLevelValue.toInt()}",
+                              "Goal Value: ${gameStatus.level?.nextLevelValue}",
                               style: TextStyle(
                                   fontSize: 15, color: Colors.grey[200]),
                             ),
