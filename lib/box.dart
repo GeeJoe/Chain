@@ -74,12 +74,33 @@ class Box extends StatelessWidget {
 }
 
 final List<Color?> _colors = [
+  Colors.orange[50],
+  Colors.orange[100],
   Colors.orange[200],
   Colors.orange[300],
   Colors.orange[400],
+  Colors.orange[500],
+  Colors.orange[600],
+  Colors.orange[700],
+  Colors.orange[800],
+  Colors.orange[900],
+  Colors.blue[50],
+  Colors.blue[100],
+  Colors.blue[200],
+  Colors.blue[300],
+  Colors.blue[400],
+  Colors.blue[500],
+  Colors.blue[600],
+  Colors.blue[700],
+  Colors.blue[800],
+  Colors.blue[900],
+  Colors.purple[600],
+  Colors.purple[700],
+  Colors.purple[800],
+  Colors.purple[900],
 ];
 
 Color? _colorByValue(int level, int value) {
-  int index = (value - (level - 1) * 2) % _colors.length;
+  int index = value - (level - 1) * 2;
   return _colors[index];
 }
