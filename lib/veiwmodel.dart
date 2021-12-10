@@ -8,14 +8,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class GameViewModel extends ChangeNotifier {
+  /// 表示手指触摸屏幕的位置
   Offset? pointer;
 
+  /// 表示被链接起来的结点
   List<Node> chain = [];
+
+  /// 表示当前游戏所有结点
   Map<Offset, Node> allNode = {};
+
+  /// 游戏等级信息
   GameLevel gameLevel = GameLevel(
       level: 1,
       containerSize: const Size(double.infinity, double.infinity),
       boxSpace: 5);
+
+  /// 游戏状态
   GameStatus gameStatus = GameStatus();
 
   /// 重新开始游戏
@@ -79,13 +87,13 @@ class GameViewModel extends ChangeNotifier {
     }
     // 如果链为空，则添加当前结点为链头
     if (chain.isEmpty) {
-      chain = [node];
+      chain.add(node);
       debugPrint("tryPutInChain node=$node");
       notifyListeners();
       return;
     }
     if (chain.last.canChain(node)) {
-      chain = [...chain, node];
+      chain.add(node);
       debugPrint("tryPutInChain node=$node");
       notifyListeners();
       return;
@@ -100,7 +108,7 @@ class GameViewModel extends ChangeNotifier {
     }
     // 链长小于 3，不得分，但是要清空链
     if (chain.length < 3) {
-      chain = [];
+      chain.clear();
       notifyListeners();
       return;
     }
@@ -123,7 +131,7 @@ class GameViewModel extends ChangeNotifier {
         Node.merge(lastChainedNode, chain.length ~/ 3 + lastChainedNode.value);
     allNode[mergeNode.coordinate] = mergeNode;
 
-    chain = [];
+    chain.clear();
     notifyListeners();
 
     await Future.delayed(AnimationConfig.popDuration);

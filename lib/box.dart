@@ -48,7 +48,7 @@ class Box extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 border: selected
-                    ? Border.all(color: Colors.yellow, width: 4)
+                    ? Border.all(color: Colors.yellowAccent, width: 4)
                     : null,
                 color: node.merge
                     ? Colors.orange[900]

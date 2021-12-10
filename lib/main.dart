@@ -64,35 +64,43 @@ class _MyGameState extends State<MyGame> {
         ],
       ),
       body: Center(
-        child: Selector<GameViewModel, GameStatus>(
-          selector: (context, viewModel) => viewModel.gameStatus,
-          builder: (BuildContext context, gameStatus, Widget? child) {
+        child: Selector<GameViewModel, bool>(
+          selector: (context, viewModel) => viewModel.gameStatus.gameOver,
+          builder: (BuildContext context, gameOver, Widget? child) {
             return Container(
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
-              color: gameStatus.gameOver ? Colors.red[200] : Colors.blue[200],
-              child: GestureDetector(
-                onPanUpdate: (updateDetail) {
-                  Provider.of<GameViewModel>(context, listen: false)
-                      .updatePointer(updateDetail.localPosition);
-                },
-                onPanEnd: (_) {
-                  Provider.of<GameViewModel>(context, listen: false)
-                    ..updatePointer(null)
-                    ..endPointer();
-                },
-                child: Selector<GameViewModel, List<Node>>(
-                    selector: (context, viewModel) =>
-                        viewModel.allNode.values.toList(),
-                    builder: (BuildContext context, allNode, Widget? child) {
-                      debugPrint("new pad");
-                      return Stack(
-                        children: [
-                          ...allNode.map((e) => Box(
-                                e,
-                                key: ValueKey(e.id),
-                              )),
-                          gameStatus.gameOver
+              color: gameOver ? Colors.red[200] : Colors.blue[200],
+              child: child!,
+            );
+          },
+          child: GestureDetector(
+            onPanUpdate: (updateDetail) {
+              Provider.of<GameViewModel>(context, listen: false)
+                  .updatePointer(updateDetail.localPosition);
+            },
+            onPanEnd: (_) {
+              Provider.of<GameViewModel>(context, listen: false)
+                ..updatePointer(null)
+                ..endPointer();
+            },
+            child: Selector<GameViewModel, List<Node>>(
+                selector: (context, viewModel) =>
+                    viewModel.allNode.values.toList(),
+                builder: (BuildContext context, allNode, Widget? child) {
+                  debugPrint("new pad");
+                  return Stack(
+                    children: [
+                      ...allNode.map((e) => Box(
+                            e,
+                            key: ValueKey(e.id),
+                          )),
+                      Selector<GameViewModel, bool>(
+                        selector: (context, viewModel) =>
+                            viewModel.gameStatus.gameOver,
+                        builder:
+                            (BuildContext context, gameOver, Widget? child) {
+                          return gameOver
                               ? const Align(
                                   alignment: AlignmentDirectional.center,
                                   child: Text(
@@ -100,17 +108,23 @@ class _MyGameState extends State<MyGame> {
                                     style: TextStyle(fontSize: 30),
                                   ),
                                 )
-                              : const SizedBox(),
-                          child!,
-                        ],
-                      );
-                    },
-                    child: Align(
-                      alignment: AlignmentDirectional.topCenter,
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        color: Colors.red[200],
-                        child: Row(
+                              : const SizedBox();
+                        },
+                      ),
+                      child!,
+                    ],
+                  );
+                },
+                child: Align(
+                  alignment: AlignmentDirectional.topCenter,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    color: Colors.red[200],
+                    child: Selector<GameViewModel, GameStatus>(
+                      selector: (context, viewModel) => viewModel.gameStatus,
+                      builder:
+                          (BuildContext context, gameStatus, Widget? child) {
+                        return Row(
                           children: [
                             Text(
                               "Level: ${gameStatus.level?.level}",
@@ -130,12 +144,12 @@ class _MyGameState extends State<MyGame> {
                                   fontSize: 15, color: Colors.grey[200]),
                             ),
                           ],
-                        ),
-                      ),
-                    )),
-              ),
-            );
-          },
+                        );
+                      },
+                    ),
+                  ),
+                )),
+          ),
         ),
       ),
     );
