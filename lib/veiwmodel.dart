@@ -35,15 +35,12 @@ class GameViewModel extends ChangeNotifier {
   startLevel(GameLevel gameLevel) {
     debugPrint("newLevel gameLevel=$gameLevel");
     this.gameLevel = gameLevel;
-    Map<Offset, Node> nodes = {};
     for (int y = 0; y < gameLevel.row; y++) {
       for (int x = 0; x < gameLevel.column; x++) {
         Offset coordinate = Offset(x.toDouble(), y.toDouble());
-        nodes[coordinate] = Node.random(gameLevel, coordinate);
+        allNode[coordinate] = Node.random(gameLevel, coordinate);
       }
     }
-
-    allNode = nodes;
 
     gameStatus = GameStatus(
       gameOver: false,
